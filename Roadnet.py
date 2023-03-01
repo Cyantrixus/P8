@@ -35,6 +35,7 @@ class Roadnet:
         return gpd.read_file(filename)
     
     # Lookup an item in the map with the the partial function f(item)
+    # Note: Only finds the first occurence of the item (the keys should be unique most of the time)
     def lookup(self, gpkg, f, item):
         pred = partial(f, item)
         for row in gpkg.itertuples():
