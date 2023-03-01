@@ -9,5 +9,5 @@ class Processor:
     
     def read(self, path):
         # Numpy attempt
-        csv = np.recfromcsv(path, delimiter=',')
+        csv = np.recfromcsv(path, delimiter=',', encoding="utf-8")
         self.data.append(csv)
