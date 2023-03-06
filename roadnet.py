@@ -23,13 +23,8 @@ class Roadnet:
         # Check path
         if not os.path.isdir(self.path):
             os.makedirs(self.path)
-
-        #Graph node and edges
-        nodes, edges = ox.utils_graph.graph_to_gdfs(self.graph)
-        nodes = ox.io._stringify_nonnumeric_cols(nodes)
-        edges = ox.io._stringify_nonnumeric_cols(edges)
-
-
+        
+        #Save Graph
         print("SAVING NETWORK")
         ox.io.save_graph_geopackage(self.graph, filename, encoding="utf-8")
 

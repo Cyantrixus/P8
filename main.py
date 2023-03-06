@@ -1,7 +1,7 @@
 import os
 import time
-import Auxiliary as aux
-from Roadnet import Roadnet
+import auxiliary as aux
+from roadnet import Roadnet
 from processor import Processor
 
 # Files
