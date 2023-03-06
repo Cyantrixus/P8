@@ -1,8 +1,10 @@
 import os
 import time
 import Auxiliary as aux
+import pandas as p
+import geopandas as gp
 from Roadnet import Roadnet
-from Processor import Processor
+from processor import Processor
 
 # Files
 dataPath = os.path.abspath(r"./Data/taxi_log_2008_by_id")
@@ -22,6 +24,10 @@ print(f"PROCESSOR READY: {time_process} SECONDS")
 for file in files:
     processor.read(dataPath + "/" + file)
     break
+
+dframe = p.concat(processor.data, ignore_index=True)
+gdf = gp.GeoDataFrame(dframe, geometry=gp.points_from_xy(dframe.long, dframe.lat))
+print(gdf.to_string)
 
 # Print time log
 done = time.time() - time_process - time_start
