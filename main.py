@@ -2,7 +2,7 @@ import os
 import time
 import Auxiliary as aux
 from Roadnet import Roadnet
-from Processor import Processor
+from processor import Processor
 
 # Files
 dataPath = os.path.abspath(r"./Data/taxi_log_2008_by_id")
