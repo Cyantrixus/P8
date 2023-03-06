@@ -6,7 +6,7 @@ from Processor import Processor
 
 # Files
 dataPath = os.path.abspath(r"./Data/taxi_log_2008_by_id")
-outputPath = os.path.abspath(r"./Output")
+outputPath = os.path.abspath(r"./Graphs")
 files = os.listdir(dataPath)
 
 # Create processor
@@ -29,8 +29,8 @@ print(f"TIME TO READ: {done} SECONDS")
 print(f"DATA SIZE: {len(processor.data)}")
 
 # Load + lookup example
-print(f"LOADING {map.name} MAP")
-data = map.load()
-sample = data.head()
-row = map.lookup(sample, aux.idpred, 0)
-print(row)
+#print(f"LOADING {map.name} MAP")
+#data = map.load()
+#sample = data.head()
+#row = map.lookup(sample, aux.idpred, 0)
+#print(row)
