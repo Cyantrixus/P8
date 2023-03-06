@@ -3,7 +3,7 @@ import time
 import Auxiliary as aux
 import pandas as p
 import geopandas as gp
-from Roadnet import Roadnet
+from roadnet import Roadnet
 from processor import Processor
 
 # Files

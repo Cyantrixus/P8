@@ -1,6 +1,7 @@
 import os
 import osmnx as ox
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 from functools import partial
 
@@ -22,21 +23,8 @@ class Roadnet:
         # Check path
         if not os.path.isdir(self.path):
             os.makedirs(self.path)
-
-        nodes, edges = ox.utils_graph.graph_to_gdfs(self.graph)
-        nodes = ox.io._stringify_nonnumeric_cols(nodes)
-        edges = ox.io._stringify_nonnumeric_cols(edges)
-
-        # We need an unique ID for each element in the given vector
-        ids = lambda x: np.arange(1, len(x), 1)
-
-        #Assign ids
-        edges["key"] = ids(edges)
-        nodes["node"] = ids(nodes)
-
-        print(edges)
-        print(nodes)
-
+        
+        #Save Graph
         print("SAVING NETWORK")
         ox.io.save_graph_geopackage(self.graph, filename, encoding="utf-8")
 
