@@ -1,8 +1,5 @@
 import os
 import time
-import auxiliary as aux
-import pandas as p
-import geopandas as gp
 from roadnet import Roadnet
 from processor import Processor
 
@@ -26,14 +23,14 @@ for file in files:
     # print(processor.data[0]["long"])
     break
 
-dframe = p.concat(processor.data, ignore_index=True)
-gdf = gp.GeoDataFrame(dframe, geometry=gp.points_from_xy(dframe.long, dframe.lat))
-print(gdf.to_string)
-
 # Print time log
 done = time.time() - time_process - time_start
 print(f"TIME TO READ: {done} SECONDS")
 print(f"DATA SIZE: {len(processor.data)}")
+
+# Map match
+processor.write_points()
+print(processor.routes[0])
 
 # Load + lookup example
 #print(f"LOADING {map.name} MAP")
