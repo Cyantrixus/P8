@@ -1,6 +1,6 @@
 import os
 import time
-import Auxiliary as aux
+import auxiliary as aux
 import pandas as p
 import geopandas as gp
 from roadnet import Roadnet
