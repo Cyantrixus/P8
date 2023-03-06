@@ -23,6 +23,7 @@ print(f"PROCESSOR READY: {time_process} SECONDS")
 # Read CSV files
 for file in files:
     processor.read(dataPath + "/" + file)
+    # print(processor.data[0]["long"])
     break
 
 dframe = p.concat(processor.data, ignore_index=True)
