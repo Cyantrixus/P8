@@ -28,11 +28,8 @@ class Roadnet:
         nodes, edges = ox.utils_graph.graph_to_gdfs(self.graph)
         nodes = ox.io._stringify_nonnumeric_cols(nodes)
         edges = ox.io._stringify_nonnumeric_cols(edges)
-        ys = nodes['y']
-        xs = nodes['x']
-        dataframes = [ys,xs]
-        test = pd.concat(dataframes, sort=False)
-        #print(test)
+
+
         print("SAVING NETWORK")
         ox.io.save_graph_geopackage(self.graph, filename, encoding="utf-8")
 
