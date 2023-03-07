@@ -1,7 +1,12 @@
 import os
 import time
+import numpy as np
 from roadnet import Roadnet
 from processor import Processor
+
+from pytrack.graph import graph, distance
+from pytrack.analytics import visualization
+from pytrack.matching import candidate, mpmatching_utils, mpmatching
 
 # Files
 dataPath = os.path.abspath(r"./Data/taxi_log_2008_by_id")
