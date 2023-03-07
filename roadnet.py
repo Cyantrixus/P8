@@ -10,12 +10,16 @@ class Roadnet:
     def __init__(self, name, place, path):
         self.name  = name
         self.path  = path
-        self.graph = ox.graph_from_place(place, network_type='drive')
+        filename = self.path + "/" + self.name + ".graphml"
+        if os.path.isfile(filename):
+            self.graph = ox.io.load_graphml(filename)
+        else:
+            self.graph = ox.graph_from_place(place, network_type='drive')
     
     # Write the graph to disk as a gpkg file if a file doesnt exist with that name
     def write(self):
         # Check file
-        filename = self.path + "/" + self.name + ".gpkg"
+        filename = self.path + "/" + self.name + ".graphml"
         if os.path.isfile(filename):
             print("NETWORK ALREADY SAVED")
             return
@@ -26,7 +30,7 @@ class Roadnet:
         
         #Save Graph
         print("SAVING NETWORK")
-        ox.io.save_graph_geopackage(self.graph, filename, encoding="utf-8")
+        ox.io.save_graphml(self.graph, filename, encoding="utf-8")
 
     # Load a gpkg file and return the object
     def load(self):
