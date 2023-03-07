@@ -34,25 +34,31 @@ print(f"DATA SIZE: {len(processor.data)}")
 
 # Map match
 processor.write_points()
-print(processor.routes[0])
-
 points = processor.routes[0]
 
 # # Create BBOX
 north, east = np.max(np.array([*points]), 0)
 south, west = np.min(np.array([*points]), 0)
 
-map.graph = graph.graph_from_bbox(north=north, east=east, south=south, west=west, simplify=True, network_type='drive')
+map.graph = graph.graph_from_bbox(north=north, east=east, south=south, west=west, buffer_dist=500, simplify=True, network_type='drive')
 
 map.write()
 
 G = map.graph
 
-# G_interp, candidates = candidate.get_candidates(G, points, interp_dist=5, closest=True, radius=30)
-# print(candidates)
-# trellis = mpmatching_utils.create_trellis(candidates)
-# path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
-# print(path_prob)
+latitudes = [lat for (lat, _) in processor.routes[0]]
+longitudes = [long for (_, long) in processor.routes[0]]
+
+loc = (np.mean(latitudes), np.mean(longitudes))
+maps = visualization.Map(location=loc, zoom_start=15)
+maps.add_graph(G, plot_nodes=True)
+
+G_interp, candidates = candidate.get_candidates(G, points, interp_dist=5, closest=True, radius=100)
+trellis = mpmatching_utils.create_trellis(candidates)
+path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
+
+maps.draw_path(G_interp, trellis, predecessor, "MatchedMap")
+maps.save(outputPath + "/" + "MatchedMap", close_file=True)
 
 # Load + lookup example
 #print(f"LOADING {map.name} MAP")
