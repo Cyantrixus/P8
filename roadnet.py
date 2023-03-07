@@ -3,7 +3,7 @@ import osmnx as ox
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from functools import partial
+
 
 class Roadnet:
     # Initialize a new instance by getting the graph from OSM
@@ -32,13 +32,13 @@ class Roadnet:
         print("SAVING NETWORK")
         ox.io.save_graphml(self.graph, filename, encoding="utf-8")
 
-    # Load a gpkg file and return the object
+    # Load a GraphML file and return the object
     def load(self):
-        filename = self.path + "/" + self.name + ".gpkg"
+        filename = self.path + "/" + self.name + ".graphml"
         if not os.path.isfile(filename):
             print("NETWORK DOES NOT EXIST")
             return
-        return gpd.read_file(filename)
+        return ox.io.load_graphml(filename)
     
     # Lookup an item in the map with the the partial function f(item)
     # Note: Only finds the first occurence of the item (the keys should be unique most of the time)
