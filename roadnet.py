@@ -14,7 +14,7 @@ class Roadnet:
         if os.path.isfile(filename):
             self.graph = ox.io.load_graphml(filename)
         else:
-            self.graph = ox.graph_from_place(place, network_type='drive')
+            self.graph = ox.graph_from_place(place, network_type='drive', simplify=True)
     
     # Write the graph to disk as a gpkg file if a file doesnt exist with that name
     def write(self):

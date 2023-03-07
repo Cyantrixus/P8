@@ -17,7 +17,7 @@ class Processor:
         for taxi in self.data:
             geodata = gp.GeoDataFrame(taxi, geometry=gp.points_from_xy(taxi.long, taxi.lat))
             route = []
-            for row in geodata.itertuples():
-                tuple = (row.lat, row.long) # PyTrack docs har (lang, long) som punkter
-                route.append(tuple)
-            self.routes.append(route)
+            latitude = geodata["lat"].to_list()
+            longitude = geodata["long"].to_list()
+            points = [(lat, lon) for lat, lon in zip(latitude[:30], longitude[:30])]
+            self.routes.append(points)
