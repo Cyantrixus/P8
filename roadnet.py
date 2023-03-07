@@ -1,8 +1,12 @@
 import os
-import osmnx as ox
+import osmnx as osm
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+
+from pytrack.graph import graph, distance
+from pytrack.analytics import visualization
+from pytrack.matching import candidate, mpmatching_utils, mpmatching
 
 
 class Roadnet:
@@ -14,7 +18,10 @@ class Roadnet:
         if os.path.isfile(filename):
             self.graph = ox.io.load_graphml(filename)
         else:
-            self.graph = ox.graph_from_place(place, network_type='drive', simplify=True)
+            # # Create BBOX
+            location = osm.geocoder.geocode(place)
+            north, south, east, west = osm.utils_geo.bbox_from_point(location, 1e5)
+            self.graph = graph.graph_from_bbox(north=north, east=east, south=south, west=west, simplify=True, network_type='drive')
     
     # Write the graph to disk as a gpkg file if a file doesnt exist with that name
     def write(self):
@@ -30,7 +37,7 @@ class Roadnet:
         
         #Save Graph
         print("SAVING NETWORK")
-        ox.io.save_graphml(self.graph, filename, encoding="utf-8")
+        osm.io.save_graphml(self.graph, filename, encoding="utf-8")
 
     # Load a GraphML file and return the object
     def load(self):
@@ -38,7 +45,7 @@ class Roadnet:
         if not os.path.isfile(filename):
             print("NETWORK DOES NOT EXIST")
             return
-        return ox.io.load_graphml(filename)
+        return osm.io.load_graphml(filename)
     
     # Lookup an item in the map with the the partial function f(item)
     # Note: Only finds the first occurence of the item (the keys should be unique most of the time)
