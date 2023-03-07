@@ -17,42 +17,41 @@ files = os.listdir(dataPath)
 # Create processor
 print("CREATING PROCESSOR")
 time_start = time.time()
+
 processor = Processor()
 map = Roadnet('BJ', "Beijing", outputPath)
 map.write()
+
+# Processor ready
 time_process = time.time() - time_start
 print(f"PROCESSOR READY: {time_process} SECONDS")
 
 # Read CSV files
 for file in files:
     processor.read(dataPath + "/" + file)
-    # print(processor.data[0]["long"])
     break
+    # print(processor.data[0]["long"])
 
-# Print time log
+# Print read log
 done = time.time() - time_process - time_start
 print(f"TIME TO READ: {done} SECONDS")
 print(f"DATA SIZE: {len(processor.data)}")
 
-# Map match
+# Map matching
 processor.write_points()
-points = processor.routes[0]
+path = map.match(processor.routes[0])
+print(path)
 
-G = map.graph
+#loc = (np.mean(latitudes), np.mean(longitudes))
+#maps = visualization.Map(location=loc, zoom_start=15)
+#maps.add_graph(G, plot_nodes=True)
 
-latitudes = [lat for (lat, _) in processor.routes[0]]
-longitudes = [long for (_, long) in processor.routes[0]]
+#G_interp, candidates = candidate.get_candidates(G, points, interp_dist=5, closest=True, radius=100)
+#trellis = mpmatching_utils.create_trellis(candidates)
+#path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
 
-loc = (np.mean(latitudes), np.mean(longitudes))
-maps = visualization.Map(location=loc, zoom_start=15)
-maps.add_graph(G, plot_nodes=True)
-
-G_interp, candidates = candidate.get_candidates(G, points, interp_dist=5, closest=True, radius=100)
-trellis = mpmatching_utils.create_trellis(candidates)
-path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
-
-maps.draw_path(G_interp, trellis, predecessor, "MatchedMap")
-maps.save(outputPath + "/" + "MatchedMap.html", close_file=True)
+#maps.draw_path(G_interp, trellis, predecessor, "MatchedMap")
+#maps.save(outputPath + "/" + "MatchedMap.html", close_file=True)
 
 # Load + lookup example
 #print(f"LOADING {map.name} MAP")
