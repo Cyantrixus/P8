@@ -3,6 +3,7 @@ import osmnx as osm
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+import json
 
 from pytrack.graph import graph, distance
 from pytrack.analytics import visualization
@@ -14,19 +15,22 @@ class Roadnet:
     def __init__(self, name, place, path):
         self.name  = name
         self.path  = path
-        filename = self.path + "/" + self.name + ".graphml"
+        filename = self.path + "/" + self.name + ".json"
         if os.path.isfile(filename):
-            self.graph = osm.io.load_graphml(filename)
+            with open(self.path + "/" + self.name + ".json", "r", encoding="utf8") as file:
+                self.json = json.load(file)
+                self.graph = graph.create_graph(self.json)
         else:
             # # Create BBOX
             location = osm.geocoder.geocode(place)
-            north, south, east, west = osm.utils_geo.bbox_from_point(location, 30000)
-            self.graph = graph.graph_from_bbox(*distance.enlarge_bbox(north, south, west, east, 500), simplify=True, network_type='drive')
-    
+            north, south, east, west = osm.utils_geo.bbox_from_point(location, 10000)
+            self.json = graph.download.osm_download(distance.enlarge_bbox(north, south, west, east, 500))
+            self.graph = graph.create_graph(self.json)
+
     # Write the graph to disk as a graphml file if a file doesnt exist with that name
     def write(self):
         # Check file
-        filename = self.path + "/" + self.name + ".graphml"
+        filename = self.path + "/" + self.name + ".json"
         if os.path.isfile(filename):
             print("NETWORK ALREADY SAVED")
             return
@@ -37,7 +41,8 @@ class Roadnet:
         
         #Save Graph
         print("SAVING NETWORK")
-        osm.io.save_graphml(self.graph, filename, encoding="utf-8")
+        with open(self.path + "/" + self.name + ".json", "w", encoding="utf8") as file:
+            json.dump(self.json, file, ensure_ascii=False, indent=2)
 
     # Load a GraphML file and return the object
     def load(self):
