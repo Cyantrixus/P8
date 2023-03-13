@@ -3,11 +3,7 @@ import osmnx as osm
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import json
-
-from pytrack.graph import graph, distance
-from pytrack.analytics import visualization
-from pytrack.matching import candidate, mpmatching_utils, mpmatching
+from fmm import Network,NetworkGraph,STMATCH,STMATCHConfig
 
 
 class Roadnet:
@@ -15,60 +11,52 @@ class Roadnet:
     def __init__(self, name, place, path):
         self.name  = name
         self.path  = path
-        filename = self.path + "/" + self.name + ".json"
-        if os.path.isfile(filename):
-            with open(self.path + "/" + self.name + ".json", "r", encoding="utf8") as file:
-                self.json = json.load(file)
-                self.graph = graph.create_graph(self.json)
-        else:
-            # # Create BBOX
-            location = osm.geocoder.geocode(place)
-            north, south, east, west = osm.utils_geo.bbox_from_point(location, 10000)
-            self.json = graph.download.osm_download(distance.enlarge_bbox(north, south, west, east, 500))
-            self.graph = graph.create_graph(self.json)
-
-    # Write the graph to disk as a graphml file if a file doesnt exist with that name
-    def write(self):
-        # Check file
-        filename = self.path + "/" + self.name + ".json"
-        if os.path.isfile(filename):
+        filename = self.path + "/" + self.name
+        if os.path.isfile(filename + ".shp"):
             print("NETWORK ALREADY SAVED")
-            return
-        
-        # Check path
-        if not os.path.isdir(self.path):
-            os.makedirs(self.path)
-        
-        #Save Graph
-        print("SAVING NETWORK")
-        with open(self.path + "/" + self.name + ".json", "w", encoding="utf8") as file:
-            json.dump(self.json, file, ensure_ascii=False, indent=2)
+        else:
+            print("SAVING NETWORK")
+            graph = osm.graph_from_place(place, network_type='drive')
+            
+            # Create files
+            node_file = os.path.join(self.path, "nodes.shp")
+            edge_file = os.path.join(self.path, "edges.shp")
 
-    # Load a GraphML file and return the object
-    def load(self):
-        filename = self.path + "/" + self.name + ".graphml"
-        if not os.path.isfile(filename):
-            print("NETWORK DOES NOT EXIST")
-            return
-        return osm.io.load_graphml(filename)
+            nodes, edges = osm.utils_graph.graph_to_gdfs(graph)
+            nodes = osm.io._stringify_nonnumeric_cols(nodes)
+            edges = osm.io._stringify_nonnumeric_cols(edges)
+
+            edges["fid"] = np.arange(0, edges.shape[0], dtype='int')
+
+            nodes.to_file(node_file, encoding='utf-8')
+            edges.to_file(edge_file, encoding='utf-8')
     
-    def match(self, route):
-        G_interp, candidates = candidate.get_candidates(self.graph, route)
-        trellis = mpmatching_utils.create_trellis(candidates)
-        path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
-        return mpmatching_utils.create_matched_path(self.graph, trellis, predecessor)(trellis, predecessor, "start", "target")
+    def match(self, points):
+        # Load roadnet from path
+        roadnet = Network(self.path + "/" + "edges.shp")
+        print(f"Nodes: {roadnet.get_node_count()}, Edges: {roadnet.get_edge_count()}")
 
-    def match_visualize(self, route):
-        pass
-        #loc = (np.mean(latitudes), np.mean(longitudes))
-        #maps = visualization.Map(location=loc, zoom_start=15)
-        #maps.add_graph(G, plot_nodes=True)
-        #G_interp, candidates = candidate.get_candidates(G, points, interp_dist=5, closest=True, radius=100)
-        #trellis = mpmatching_utils.create_trellis(candidates)
-        #path_prob, predecessor = mpmatching.viterbi_search(G_interp, trellis, "start", "target")
+        # Configuration variables
+        k = 4
+        e = 0.5
+        r = 0.4
+        vmax = 30
+        factor = 1.5
 
-        #maps.draw_path(G_interp, trellis, predecessor, "MatchedMap")
-        #maps.save(outputPath + "/" + "MatchedMap.html", close_file=True)
+        # FMM Config
+        config = STMATCHConfig(k, r, e, vmax, factor)
+        graph = NetworkGraph(roadnet)
+        model = STMATCH(roadnet, graph)
+
+        # Construct wtk string
+        pairs = [f"{lat} {long}" for (lat, long) in points]
+        wtk = "LINESTRING("
+        for xy in pairs:
+            wtk = wtk + xy + ","
+        wtk = wtk + ")"
+
+        # Return match
+        return model.match_wtk(wtk, config)
 
     # Lookup an item in the map with the the partial function f(item)
     # Note: Only finds the first occurence of the item (the keys should be unique most of the time)
